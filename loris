@@ -106,6 +106,10 @@ f_cleanup() {
     find -L /var/run/netns -type l -delete
 }
 
+f_install() {
+    sudo apt-get install openvswitch-controller openvswitch-switch
+}
+
 
 ################## main ########################
 
@@ -130,10 +134,17 @@ case "$1" in
     f_cleanup 
 ;;
 
+'install')
+    echo "Installing the openvswitch software to the server"
+    f_install
+;;
+
+
 '')
 echo "loris - isolate Docker pod networks"
-echo "Usage: $0 (init|cluster|connect|cleanup)"
+echo "Usage: $0 (install|init|cluster|connect|cleanup)"
 echo "Commands:"
+echo " $0 install                                    : Install openvswitch and other essential software on ubuntu 14.04 server"
 echo " $0 init                                       : Prepare system for network isolation"
 echo " $0 cluster \$remote_host_ips                   : Connect localhost to specified remote hosts"
 echo " $0 connect \$container \$desired_ip \$pod_number : Connect container to global pod"
