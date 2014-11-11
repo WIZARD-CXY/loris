@@ -2,6 +2,9 @@
 # Revision date: 10/17/2014 @ 8:15am PST
 
 # Bunch of hard coded stuff that will go away later
+
+set -ex
+
 CONTAINER_INTERFACE=eth1
 DEFAULT_MASK=24
 TUNNEL_TYPE=vxlan
@@ -10,6 +13,8 @@ BR_TUN=br1
 
 # Function to create two bridges on the host connected to each other
 f_create_bridges_with_default_flows() {
+    #in case /var/run/netns not exist
+    sudo mkdir -p /var/run/netns
     iptables -I INPUT -p udp --dport 4789 -j ACCEPT
     ovs-vsctl add-br $BR_INT
     ovs-vsctl add-br $BR_TUN
@@ -85,7 +90,9 @@ f_connect_container() {
         IP_ADDR="$IP_ADDR/$DEFAULT_MASK"
     fi
     ip netns exec $pid ip addr add "${IP_ADDR}" dev $CONTAINER_INTERFACE
-    ip netns exec $pid ip route add default via `echo $IP_ADDR | awk -F '.' '{ print $1 "." $2 "." $3 "." 1 }'`
+   
+    # do not set the default gw  
+    #ip netns exec $pid ip route add default via `echo $IP_ADDR | awk -F '.' '{ print $1 "." $2 "." $3 "." 1 }'`
     ovs-vsctl add-port $BR_INT tap$pid -- set port tap$pid tag=$POD_ID
 
     VLAN_ID=$3
